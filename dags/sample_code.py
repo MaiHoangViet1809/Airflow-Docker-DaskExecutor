@@ -57,8 +57,6 @@ with DAG(**cf.handle_configure(dag_id=MODULE_NAME,
                                                                     ]},
                                       )
 
-
-        # copy covid data to CovidCase
         step_2 = ci.proxy_task(task_id="step_2",
                                    pipe_callable=cf.copy_data,
                                    list_pipe_msg=step_1,
