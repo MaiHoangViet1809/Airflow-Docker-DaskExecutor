@@ -61,6 +61,7 @@ services:
 
   dask-worker:
     build: dask_docker
+    user: "${AIRFLOW_UID:-1007}:0"
     environment:
       <<: *airflow-env
     command: "dask worker tcp://dask-scheduler:8786"
