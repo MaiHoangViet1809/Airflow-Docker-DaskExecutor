@@ -213,7 +213,7 @@ def get_log():
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # CORE TASK
-@task(retries=3, retry_delay=timedelta(minutes=15), max_active_tis_per_dag=6,)
+# @task(retries=3, retry_delay=timedelta(minutes=15), max_active_tis_per_dag=6,)
 def _base_task(pipe_msg: list, task_params: dict, pipe_callable=None):
     ctx = get_current_context()
     ti = ctx["ti"]
@@ -257,7 +257,17 @@ def proxy_task(task_params: dict, list_pipe_msg: list, pipe_callable: Union[Call
         mod_core_functions = importlib.import_module("plugins.core_functions")
         pipe_callable = getattr(mod_core_functions, pipe_callable)
 
-    return _base_task.override(**task_kwargs) \
+    default_config = {"retries" : 3,
+                      "retry_delay" : timedelta(minutes=15),
+                      "max_active_tis_per_dag" : 6}
+
+    if task_kwargs.get("requirements", []):
+        decorator_apply = task.virtualenv
+        default_config["system_site_packages"] = True
+    else:
+        decorator_apply = task
+
+    return decorator_apply(_base_task, **default_config).override(**task_kwargs) \
         .partial(task_params=task_params, pipe_callable=pipe_callable) \
         .expand(pipe_msg=list_pipe_msg)
 
