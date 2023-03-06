@@ -20,18 +20,19 @@ x-airflow-volumes: &airflow-volumes
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - /apps/spark-3.2.1-bin-hadoop3.2:/apps/spark-3.2.1-bin-hadoop3.2
-    - ./configs:/configs
+    - /workspace/R/xgboost:/workspace/R/xgboost
+    - /aa-datalake:/aa-datalake
+    - /aa-production-data:/aa-production-data
+    - /data_disk:/data_disk
+    - /aa-spark-thrift:/aa-spark-thrift
+    - ./configs:/configs    
 
 x-airflow-common: &airflow-common
-  # In order to add custom dependencies or upgrade provider packages you can use your extended image.
-  # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
-  # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.5.0}
   build: airflow_docker
   environment:
     <<: *airflow-env
   <<: *airflow-volumes
-  user: "${AIRFLOW_UID:-1007}:0"
+  user: "${AIRFLOW_UID:- 50000}:0"
 
 
 services:
@@ -50,7 +51,11 @@ services:
     restart: always
     
   dask-scheduler:
-    build: dask_docker
+    build: 
+      context: ./dask_docker
+      dockerfile: Dockerfile
+      args: 
+        - RUN_AS_USER=$AIRFLOW_UID
     environment:
       <<: *airflow-env
     ports:
@@ -60,8 +65,11 @@ services:
     restart: always   
 
   dask-worker:
-    build: dask_docker
-    user: "${AIRFLOW_UID:-1007}:0"
+    build: 
+      context: ./dask_docker
+      dockerfile: Dockerfile
+      args: 
+        - RUN_AS_USER=$AIRFLOW_UID
     environment:
       <<: *airflow-env
     command: "dask worker tcp://dask-scheduler:8786"
