@@ -20,11 +20,6 @@ x-airflow-volumes: &airflow-volumes
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - /apps/spark-3.2.1-bin-hadoop3.2:/apps/spark-3.2.1-bin-hadoop3.2
-    - /workspace/R/xgboost:/workspace/R/xgboost
-    - /aa-datalake:/aa-datalake
-    - /aa-production-data:/aa-production-data
-    - /data_disk:/data_disk
-    - /aa-spark-thrift:/aa-spark-thrift
     - ./configs:/configs    
 
 x-airflow-common: &airflow-common
